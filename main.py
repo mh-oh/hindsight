@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
   env = DummyVecEnv([make_env])
   env = VecNormalize(env, gamma=conf.train.gamma)
-  env = VecVideoRecorder(env, f"videos/{args.run}/", record_video_trigger=lambda x: x % 10000 == 0, video_length=200)
+  env = VecVideoRecorder(env, f"videos/{args.run}/", record_video_trigger=lambda x: x % 20000 == 0, video_length=200)
 
   agent = conf.agent.type
   agent = agent(env=env,
