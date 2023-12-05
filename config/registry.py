@@ -2,7 +2,7 @@
 from copy import deepcopy
 from config.conf import Conf
 from stable_baselines3 import HerReplayBuffer
-from stable_baselines3 import SAC
+from stable_baselines3 import SAC, DDPG
 from stable_baselines3.common.buffers import DictReplayBuffer
 from sb3_contrib import TQC
 
@@ -37,6 +37,7 @@ conf.train.alpha = 'auto'
 conf.train.gamma = 0.95
 conf.train.learning_rate = 1e-3
 conf.train.tau = 0.05
+conf.train.random_action_probability = None
 
 conf.policy = {}
 conf.policy.type = 'MultiInputPolicy'
@@ -103,7 +104,56 @@ for key in keys:
 #   conf.agent.type = SAC
 #   register(conf, key.replace("tqc", "sac"))
 
+u"""
+DDPG experiments.
+"""
+
+conf = Conf()
+
+conf.seed = 1
+
+conf.env = {}
+conf.env.key = "FetchPush-v2"
+
+conf.test_env = {}
+conf.test_env.key = "FetchPush-v2"
+
+conf.agent = {}
+conf.agent.type = DDPG #
+
+conf.train = {}
+conf.train.steps = 1005e3 #
+conf.train.batch_size = 256 #
+# conf.train.alpha = 'auto'
+conf.train.gamma = 0.95
+conf.train.learning_rate = 1e-3
+conf.train.tau = 0.95 # Polyak-averaging coefficient
+conf.train.random_action_probability = 0.3 # DDPG+HER's hack...
+
+conf.policy = {}
+conf.policy.type = 'MultiInputPolicy' #
+conf.policy.kwargs = dict(
+  net_arch=[256, 256, 256], n_critics=1) #
+
+conf.rb = {}
+conf.rb.capacity = 1000000 #
+conf.rb.type = DictReplayBuffer #
+conf.rb.kwargs = {}
+
+conf.norm = {}
+conf.norm.observation = True #
+conf.norm.observation_clip = (-200, 200) #
+
+register(conf, "ddpg-fetchpush-v2")
 
 
 
+
+
+conf = get("ddpg-fetchpush-v2")
+conf.rb.type = HerReplayBuffer
+conf.rb.kwargs = dict(
+  goal_selection_strategy='future', n_sampled_goal=4,)
+
+register(conf, "ddpg-fetchpush-v2-her-future")
 
